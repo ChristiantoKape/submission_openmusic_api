@@ -4,6 +4,7 @@ class PlaylistsHandler {
     this._validator = validator;
 
     this.postPlaylistHandler = this.postPlaylistHandler.bind(this);
+    this.getPlaylistsHandler = this.getPlaylistsHandler.bind(this);
   }
 
   async postPlaylistHandler(request, h) {
@@ -24,6 +25,18 @@ class PlaylistsHandler {
     });
     response.code(201);
     return response;
+  }
+
+  async getPlaylistsHandler(request) {
+    const { id: credentialId } = request.auth.credentials;
+    const notes = await this._service.getPlaylists(credentialId);
+
+    return {
+      status: 'success',
+      data: {
+        playlists: notes,
+      },
+    };
   }
 }
 
