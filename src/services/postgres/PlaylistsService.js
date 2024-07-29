@@ -5,7 +5,7 @@ const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 const AuthorizationError = require('../../exceptions/AuthorizationError');
 
-class PlaylistService {
+class PlaylistsService {
   constructor() {
     this._pool = new Pool();
   }
@@ -65,12 +65,37 @@ class PlaylistService {
       throw new NotFoundError('Playlist tidak ditemukan');
     }
 
-    const playlist = result.rows[0];
-
-    if (playlist.owner_id !== owner) {
+    if (result.rows[0].owner_id !== owner) {
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
+    }
+  }
+
+  async verifyPlaylistAccess(id, owner) {
+    try {
+      await this.verifyPlaylistOwner(id, owner);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      } else if (error instanceof AuthorizationError) {
+        throw error;
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  async verifySongInPlaylist(playlistId, songId) {
+    const query = {
+      text: 'SELECT * FROM playlist_songs WHERE playlist_id = $1 AND song_id = $2',
+      values: [playlistId, songId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new InvariantError('Lagu tidak ditemukan di playlist');
     }
   }
 }
 
-module.exports = PlaylistService;
+module.exports = PlaylistsService;

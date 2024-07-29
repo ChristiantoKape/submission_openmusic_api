@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const InvariantError = require('../../exceptions/InvariantError');
 const AuthenticationError = require('../../exceptions/AuthenticationError');
 
-class UserService {
+class UsersService {
   constructor() {
     this._pool = new Pool();
   }
@@ -15,11 +15,10 @@ class UserService {
     const id = `user-${nanoid(16)}`;
     const hashedPassword = await bcrypt.hash(password, 10);
     const createdAt = new Date().toISOString();
-    const updatedAt = createdAt;
 
     const query = {
-      text: 'INSERT INTO users VALUES($1, $2, $3, $4, $5, $6) RETURNING id',
-      values: [id, username, hashedPassword, fullname, createdAt, updatedAt],
+      text: 'INSERT INTO users VALUES($1, $2, $3, $4, $5, $5) RETURNING id',
+      values: [id, username, hashedPassword, fullname, createdAt],
     };
 
     const result = await this._pool.query(query);
@@ -68,4 +67,4 @@ class UserService {
   }
 }
 
-module.exports = UserService;
+module.exports = UsersService;

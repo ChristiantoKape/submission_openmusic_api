@@ -8,11 +8,10 @@ class AuthenticationsService {
 
   async addRefreshToken(token) {
     const createdAt = new Date().toISOString();
-    const updatedAt = createdAt;
 
     const query = {
-      text: 'INSERT INTO authentications VALUES($1, $2, $3) RETURNING token',
-      values: [token, createdAt, updatedAt],
+      text: 'INSERT INTO authentications VALUES($1, $2, $2) RETURNING token',
+      values: [token, createdAt],
     };
 
     await this._pool.query(query);
