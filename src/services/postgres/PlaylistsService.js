@@ -1,6 +1,5 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
-// const { mapDBToModel } = require('../../utils/playlists');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 const AuthorizationError = require('../../exceptions/AuthorizationError');
@@ -100,6 +99,25 @@ class PlaylistsService {
     if (!result.rows.length) {
       throw new InvariantError('Lagu tidak ditemukan di playlist');
     }
+  }
+
+  async getPlaylistActivityById(playlistId) {
+    const query = {
+      text: `SELECT users.username, songs.title, playlist_song_activities.action, playlist_song_activities.time
+            FROM playlist_song_activities
+            JOIN songs ON songs.id = playlist_song_activities.song_id
+            JOIN users ON users.id = playlist_song_activities.user_id
+            WHERE playlist_song_activities.playlist_id = $1`,
+      values: [playlistId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new NotFoundError('Playlist tidak ditemukan');
+    }
+
+    return result.rows;
   }
 }
 
