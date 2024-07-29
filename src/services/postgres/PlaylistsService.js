@@ -1,13 +1,14 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
-const { mapDBToModel } = require('../../utils/playlists');
+// const { mapDBToModel } = require('../../utils/playlists');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 const AuthorizationError = require('../../exceptions/AuthorizationError');
 
 class PlaylistsService {
-  constructor() {
+  constructor(collaborationService) {
     this._pool = new Pool();
+    this._collaborationService = collaborationService;
   }
 
   async addPlaylist({ name, owner }) {
@@ -30,14 +31,17 @@ class PlaylistsService {
 
   async getPlaylists(owner) {
     const query = {
-      text: `SELECT playlists.id, playlists.name, users.username FROM playlists
-      LEFT JOIN users ON users.id = playlists.owner_id
-      WHERE playlists.owner_id = $1`,
+      text: `SELECT playlists.id, playlists.name, users.username 
+            FROM playlists
+            LEFT JOIN collaborations ON collaborations.playlist_id = playlists.id
+            LEFT JOIN users ON users.id = playlists.owner_id
+            WHERE collaborations.user_id = $1 OR playlists.owner_id = $1
+            GROUP BY playlists.id, users.username`,
       values: [owner],
     };
 
     const result = await this._pool.query(query);
-    return result.rows.map(mapDBToModel);
+    return result.rows;
   }
 
   async deletePlaylistById(id) {
@@ -70,15 +74,16 @@ class PlaylistsService {
     }
   }
 
-  async verifyPlaylistAccess(id, owner) {
+  async verifyPlaylistAccess(playlistId, userId) {
     try {
-      await this.verifyPlaylistOwner(id, owner);
+      await this.verifyPlaylistOwner(playlistId, userId);
     } catch (error) {
       if (error instanceof NotFoundError) {
         throw error;
-      } else if (error instanceof AuthorizationError) {
-        throw error;
-      } else {
+      }
+      try {
+        await this._collaborationService.verifyCollaborator(playlistId, userId);
+      } catch {
         throw error;
       }
     }
