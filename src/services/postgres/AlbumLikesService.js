@@ -3,9 +3,11 @@ const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
 const AuthorizationError = require('../../exceptions/AuthorizationError');
 
+const config = require('../../config/config');
+
 class AlbumLikesService {
   constructor() {
-    this._pool = new Pool();
+    this._pool = new Pool(config.pg);
   }
 
   async addLikeAlbum({ userId, albumId }) {

@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
+const config = require('./config/config');
 
 const albums = require('./api/albums');
 const songs = require('./api/songs');
@@ -11,6 +12,7 @@ const playlists = require('./api/playlists');
 const playlistSongs = require('./api/playlistSongs');
 const collaborations = require('./api/collaborations');
 const albumLikes = require('./api/albumLikes');
+const _exports = require('./api/exports');
 
 const AlbumsService = require('./services/postgres/AlbumsService');
 const SongsService = require('./services/postgres/SongsService');
@@ -20,6 +22,7 @@ const PlaylistsService = require('./services/postgres/PlaylistsService');
 const PlaylistSongsService = require('./services/postgres/PlaylistSongsService');
 const CollaborationsService = require('./services/postgres/CollaborationsService');
 const AlbumLikesService = require('./services/postgres/AlbumLikesService');
+const ProducerService = require('./services/rabbitmq/ProducerService');
 
 const SongsValidator = require('./validator/songs');
 const AlbumsValidator = require('./validator/albums');
@@ -29,6 +32,7 @@ const PlaylistsValidator = require('./validator/playlists');
 const PlaylistSongsValidator = require('./validator/playlistSongs');
 const CollaborationsValidator = require('./validator/collaborations');
 const AlbumLikesValidator = require('./validator/albumLikes');
+const ExportsValidator = require('./validator/exports');
 
 const TokenManager = require('./tokenize/TokenManager');
 
@@ -45,8 +49,8 @@ const init = async () => {
   const albumLikesService = new AlbumLikesService(albumsService);
 
   const server = Hapi.server({
-    port: process.env.PORT,
-    host: process.env.HOST,
+    port: config.app.port,
+    host: config.app.host,
     routes: {
       cors: {
         origin: ['*'],
@@ -63,12 +67,12 @@ const init = async () => {
 
   // mendefinisikan strategy autentikasi jwt
   server.auth.strategy('openmusic_jwt', 'jwt', {
-    keys: process.env.ACCESS_TOKEN_KEY,
+    keys: config.jwt.accessToken,
     verify: {
       aud: false,
       iss: false,
       sub: false,
-      maxAgeSec: process.env.ACCESS_TOKEN_AGE,
+      maxAgeSec: config.jwt.accessTokenAge,
     },
     validate: (artifacts) => ({
       isValid: true,
@@ -140,6 +144,14 @@ const init = async () => {
         albumLikesService,
         albumsService,
         validator: AlbumLikesValidator,
+      },
+    },
+    {
+      plugin: _exports,
+      options: {
+        ProducerService,
+        playlistsService,
+        validator: ExportsValidator,
       },
     },
   ]);

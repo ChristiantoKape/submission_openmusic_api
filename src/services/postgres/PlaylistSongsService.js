@@ -3,9 +3,11 @@ const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 
+const config = require('../../config/config');
+
 class PlaylistSongsService {
   constructor(playlistsService) {
-    this._pool = new Pool();
+    this._pool = new Pool(config.pg);
     this._playlistsService = playlistsService;
   }
 

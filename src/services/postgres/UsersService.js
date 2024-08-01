@@ -5,9 +5,11 @@ const InvariantError = require('../../exceptions/InvariantError');
 const AuthenticationError = require('../../exceptions/AuthenticationError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 
+const config = require('../../config/config');
+
 class UsersService {
   constructor() {
-    this._pool = new Pool();
+    this._pool = new Pool(config.pg);
   }
 
   async addUser({ username, password, fullname }) {

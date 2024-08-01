@@ -1,9 +1,11 @@
 const { Pool } = require('pg');
 const InvariantError = require('../../exceptions/InvariantError');
 
+const config = require('../../config/config');
+
 class AuthenticationsService {
   constructor() {
-    this._pool = new Pool();
+    this._pool = new Pool(config.pg);
   }
 
   async addRefreshToken(token) {

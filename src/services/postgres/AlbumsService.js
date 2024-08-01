@@ -4,9 +4,11 @@ const { mapDBToModel } = require('../../utils/albums');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 
+const config = require('../../config/config');
+
 class AlbumsService {
   constructor() {
-    this._pool = new Pool();
+    this._pool = new Pool(config.pg);
   }
 
   async addAlbum({ name, year }) {
