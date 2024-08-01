@@ -10,6 +10,7 @@ const authentications = require('./api/authentications');
 const playlists = require('./api/playlists');
 const playlistSongs = require('./api/playlistSongs');
 const collaborations = require('./api/collaborations');
+const albumLikes = require('./api/albumLikes');
 
 const AlbumsService = require('./services/postgres/AlbumsService');
 const SongsService = require('./services/postgres/SongsService');
@@ -18,6 +19,7 @@ const AuthenticationsService = require('./services/postgres/AuthenticationsServi
 const PlaylistsService = require('./services/postgres/PlaylistsService');
 const PlaylistSongsService = require('./services/postgres/PlaylistSongsService');
 const CollaborationsService = require('./services/postgres/CollaborationsService');
+const AlbumLikesService = require('./services/postgres/AlbumLikesService');
 
 const SongsValidator = require('./validator/songs');
 const AlbumsValidator = require('./validator/albums');
@@ -26,6 +28,7 @@ const AuthenticationsValidator = require('./validator/authentications');
 const PlaylistsValidator = require('./validator/playlists');
 const PlaylistSongsValidator = require('./validator/playlistSongs');
 const CollaborationsValidator = require('./validator/collaborations');
+const AlbumLikesValidator = require('./validator/albumLikes');
 
 const TokenManager = require('./tokenize/TokenManager');
 
@@ -39,6 +42,7 @@ const init = async () => {
   const collaborationsService = new CollaborationsService();
   const playlistsService = new PlaylistsService(collaborationsService);
   const playlistSongsService = new PlaylistSongsService(playlistsService);
+  const albumLikesService = new AlbumLikesService(albumsService);
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -128,6 +132,14 @@ const init = async () => {
         playlistsService,
         usersService,
         validator: CollaborationsValidator,
+      },
+    },
+    {
+      plugin: albumLikes,
+      options: {
+        albumLikesService,
+        albumsService,
+        validator: AlbumLikesValidator,
       },
     },
   ]);
