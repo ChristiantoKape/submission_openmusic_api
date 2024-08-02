@@ -2,6 +2,8 @@ require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
+const Inert = require('@hapi/inert');
+const path = require('path');
 const config = require('./config/config');
 
 const albums = require('./api/albums');
@@ -13,6 +15,7 @@ const playlistSongs = require('./api/playlistSongs');
 const collaborations = require('./api/collaborations');
 const albumLikes = require('./api/albumLikes');
 const _exports = require('./api/exports');
+const uploads = require('./api/uploads');
 
 const AlbumsService = require('./services/postgres/AlbumsService');
 const SongsService = require('./services/postgres/SongsService');
@@ -23,6 +26,7 @@ const PlaylistSongsService = require('./services/postgres/PlaylistSongsService')
 const CollaborationsService = require('./services/postgres/CollaborationsService');
 const AlbumLikesService = require('./services/postgres/AlbumLikesService');
 const ProducerService = require('./services/rabbitmq/ProducerService');
+const StorageService = require('./services/storage/StorageService');
 
 const SongsValidator = require('./validator/songs');
 const AlbumsValidator = require('./validator/albums');
@@ -33,6 +37,7 @@ const PlaylistSongsValidator = require('./validator/playlistSongs');
 const CollaborationsValidator = require('./validator/collaborations');
 const AlbumLikesValidator = require('./validator/albumLikes');
 const ExportsValidator = require('./validator/exports');
+const UploadsValidator = require('./validator/uploads');
 
 const TokenManager = require('./tokenize/TokenManager');
 
@@ -47,6 +52,7 @@ const init = async () => {
   const playlistsService = new PlaylistsService(collaborationsService);
   const playlistSongsService = new PlaylistSongsService(playlistsService);
   const albumLikesService = new AlbumLikesService(albumsService);
+  const storageService = new StorageService(path.resolve(__dirname, 'api/uploads/file/images'));
 
   const server = Hapi.server({
     port: config.app.port,
@@ -62,6 +68,9 @@ const init = async () => {
   await server.register([
     {
       plugin: Jwt,
+    },
+    {
+      plugin: Inert,
     },
   ]);
 
@@ -152,6 +161,14 @@ const init = async () => {
         ProducerService,
         playlistsService,
         validator: ExportsValidator,
+      },
+    },
+    {
+      plugin: uploads,
+      options: {
+        service: storageService,
+        validator: UploadsValidator,
+        albumsService,
       },
     },
   ]);

@@ -54,11 +54,29 @@ class AlbumsService {
     return result.rows;
   }
 
-  async editAlbumById(id, { name, year }) {
+  async editAlbumById(id, { name, year, cover }) {
     const updatedAt = new Date().toISOString();
+
+    const oldDataQuery = {
+      text: 'SELECT * FROM albums WHERE id = $1',
+      values: [id],
+    };
+
+    const oldDataResult = await this._pool.query(oldDataQuery);
+
+    if (!oldDataResult.rows.length) {
+      throw new NotFoundError('Gagal memperbarui catatan. Id tidak ditemukan');
+    }
+
+    const oldData = oldDataResult.rows[0];
+
+    const newName = name ?? oldData.name;
+    const newYear = year ?? oldData.year;
+    const newCover = cover ?? oldData.cover;
+
     const query = {
-      text: 'UPDATE albums SET name = $1, year = $2, updated_at = $3 WHERE id = $4 RETURNING id',
-      values: [name, year, updatedAt, id],
+      text: 'UPDATE albums SET name = $1, year = $2, updated_at = $3, cover_url = $4 WHERE id = $5 RETURNING id',
+      values: [newName, newYear, updatedAt, newCover, id],
     };
 
     const result = await this._pool.query(query);
