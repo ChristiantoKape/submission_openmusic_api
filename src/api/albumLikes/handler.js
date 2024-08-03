@@ -1,12 +1,13 @@
+const autoBind = require('auto-bind');
+
 class AlbumLikesHandler {
-  constructor(service, validator, albumsService) {
+  constructor(service, validator, albumsService, cacheService) {
     this._service = service;
     this._validator = validator;
     this._albumsService = albumsService;
+    this._cacheService = cacheService;
 
-    this.postLikeAlbumHandler = this.postLikeAlbumHandler.bind(this);
-    this.getAlbumLikesHandler = this.getAlbumLikesHandler.bind(this);
-    this.deleteLikeAlbumHandler = this.deleteLikeAlbumHandler.bind(this);
+    autoBind(this);
   }
 
   async postLikeAlbumHandler(request, h) {
@@ -24,18 +25,21 @@ class AlbumLikesHandler {
     return response;
   }
 
-  async getAlbumLikesHandler(request) {
+  async getAlbumLikesHandler(request, h) {
     const { albumId } = request.params;
+    const { likes, cache } = await this._service.getAlbumLikes(albumId);
 
-    await this._albumsService.getAlbumById(albumId);
-    const likes = await this._service.getAlbumLikes({ albumId });
-
-    return {
+    const response = h.response({
       status: 'success',
       data: {
         likes,
       },
-    };
+    });
+    response.code(200);
+    if (cache) {
+      response.header('X-Data-Source', 'cache');
+    }
+    return response;
   }
 
   async deleteLikeAlbumHandler(request) {

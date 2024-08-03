@@ -41,9 +41,12 @@ const UploadsValidator = require('./validator/uploads');
 
 const TokenManager = require('./tokenize/TokenManager');
 
+const CacheService = require('./services/redis/CacheService');
+
 const ClientError = require('./exceptions/ClientError');
 
 const init = async () => {
+  const cacheService = new CacheService();
   const albumsService = new AlbumsService();
   const songsService = new SongsService();
   const usersService = new UsersService();
@@ -51,7 +54,7 @@ const init = async () => {
   const collaborationsService = new CollaborationsService();
   const playlistsService = new PlaylistsService(collaborationsService);
   const playlistSongsService = new PlaylistSongsService(playlistsService);
-  const albumLikesService = new AlbumLikesService(albumsService);
+  const albumLikesService = new AlbumLikesService(albumsService, cacheService);
   const storageService = new StorageService(path.resolve(__dirname, 'api/uploads/file/images'));
 
   const server = Hapi.server({
@@ -152,6 +155,7 @@ const init = async () => {
       options: {
         albumLikesService,
         albumsService,
+        cacheService,
         validator: AlbumLikesValidator,
       },
     },

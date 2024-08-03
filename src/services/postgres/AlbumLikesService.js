@@ -6,8 +6,9 @@ const AuthorizationError = require('../../exceptions/AuthorizationError');
 const config = require('../../config/config');
 
 class AlbumLikesService {
-  constructor() {
+  constructor(cacheService) {
     this._pool = new Pool(config.pg);
+    this._cacheService = cacheService;
   }
 
   async addLikeAlbum({ userId, albumId }) {
@@ -30,15 +31,20 @@ class AlbumLikesService {
     return result.rows[0].id;
   }
 
-  async getAlbumLikes({ albumId }) {
-    const query = {
-      text: 'SELECT * FROM user_album_likes WHERE album_id = $1',
-      values: [albumId],
-    };
+  async getAlbumLikes(albumId) {
+    try {
+      const result = await this._cacheService.get(`likes:${albumId}`);
+      return { likes: JSON.parse(result), cache: 1 };
+    } catch (error) {
+      const query = {
+        text: 'SELECT * FROM user_album_likes WHERE album_id = $1',
+        values: [albumId],
+      };
+      const result = await this._pool.query(query);
 
-    const result = await this._pool.query(query);
-
-    return result.rowCount;
+      await this._cacheService.set(`likes:${albumId}`, JSON.stringify(result.rowCount));
+      return { likes: result.rowCount };
+    }
   }
 
   async deleteLikeAlbum({ userId, albumId }) {
@@ -48,6 +54,8 @@ class AlbumLikesService {
     };
 
     const result = await this._pool.query(query);
+
+    await this._cacheService.delete(`likes:${albumId}`);
 
     if (!result.rows.length) {
       throw new AuthorizationError('Like gagal dihapus. Id tidak ditemukan');

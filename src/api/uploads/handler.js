@@ -1,3 +1,4 @@
+const autoBind = require('auto-bind');
 const config = require('../../config/config');
 
 class UploadsHandler {
@@ -6,7 +7,7 @@ class UploadsHandler {
     this._validator = validator;
     this._albumService = albumService;
 
-    this.postUploadImageHandler = this.postUploadImageHandler.bind(this);
+    autoBind(this);
   }
 
   async postUploadImageHandler(request, h) {
