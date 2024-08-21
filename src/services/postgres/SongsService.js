@@ -4,9 +4,11 @@ const InvariantError = require('../../exceptions/InvariantError');
 const { mapDBToModel } = require('../../utils/songs');
 const NotFoundError = require('../../exceptions/NotFoundError');
 
+const config = require('../../config/config');
+
 class SongsService {
   constructor() {
-    this._pool = new Pool();
+    this._pool = new Pool(config.pg);
   }
 
   async addSong({

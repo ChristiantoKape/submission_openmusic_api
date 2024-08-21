@@ -4,9 +4,11 @@ const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 const AuthorizationError = require('../../exceptions/AuthorizationError');
 
+const config = require('../../config/config');
+
 class PlaylistsService {
   constructor(collaborationService) {
-    this._pool = new Pool();
+    this._pool = new Pool(config.pg);
     this._collaborationService = collaborationService;
   }
 

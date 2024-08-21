@@ -1,12 +1,11 @@
+const autoBind = require('auto-bind');
+
 class AlbumHandler {
   constructor(service, validator) {
     this._service = service;
     this._validator = validator;
 
-    this.postAlbumHandler = this.postAlbumHandler.bind(this);
-    this.getAlbumByIdHandler = this.getAlbumByIdHandler.bind(this);
-    this.putAlbumByIdHandler = this.putAlbumByIdHandler.bind(this);
-    this.deleteAlbumByIdHandler = this.deleteAlbumByIdHandler.bind(this);
+    autoBind(this);
   }
 
   async postAlbumHandler(request, h) {
@@ -26,18 +25,23 @@ class AlbumHandler {
     return response;
   }
 
-  async getAlbumByIdHandler(request) {
+  async getAlbumByIdHandler(request, h) {
     const { id } = request.params;
-    const album = await this._service.getAlbumById(id);
+    const { album, cache } = await this._service.getAlbumById(id);
     const songs = await this._service.getSongsInAlbum(id);
-    const getDetailAlbumWichContainsSongs = { ...album, songs };
+    const getDetailAlbumWhichContainsSongs = { ...album, songs };
 
-    return {
+    const response = h.response({
       status: 'success',
       data: {
-        album: getDetailAlbumWichContainsSongs,
+        album: getDetailAlbumWhichContainsSongs,
       },
-    };
+    });
+    response.code(200);
+    if (cache) {
+      response.header('X-Data-Source', 'cache');
+    }
+    return response;
   }
 
   async putAlbumByIdHandler(request) {

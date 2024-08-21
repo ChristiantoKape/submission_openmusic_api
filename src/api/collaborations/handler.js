@@ -1,3 +1,5 @@
+const autoBind = require('auto-bind');
+
 class CollaborationsHandler {
   constructor(service, validator, playlistsService, usersService) {
     this._service = service;
@@ -5,8 +7,7 @@ class CollaborationsHandler {
     this._usersService = usersService;
     this._playlistsService = playlistsService;
 
-    this.postCollaborationHandler = this.postCollaborationHandler.bind(this);
-    this.deleteCollaborationHandler = this.deleteCollaborationHandler.bind(this);
+    autoBind(this);
   }
 
   async postCollaborationHandler(request, h) {

@@ -1,19 +1,21 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
-// const NotFoundError = require('../../exceptions/NotFoundError');
+
+const config = require('../../config/config');
 
 class CollaborationsService {
   constructor() {
-    this._pool = new Pool();
+    this._pool = new Pool(config.pg);
   }
 
   async addCollaboration({ playlistId, userId }) {
     const id = `collab-${nanoid(16)}`;
+    const createdAt = new Date().toISOString();
 
     const query = {
-      text: 'INSERT INTO collaborations VALUES($1, $2, $3) RETURNING id',
-      values: [id, playlistId, userId],
+      text: 'INSERT INTO collaborations VALUES($1, $2, $3, $4, $4) RETURNING id',
+      values: [id, playlistId, userId, createdAt],
     };
 
     const result = await this._pool.query(query);

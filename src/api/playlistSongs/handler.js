@@ -1,3 +1,5 @@
+const autoBind = require('auto-bind');
+
 class PlaylistSongsHandler {
   constructor(service, validator, playlistsService, songsService) {
     this._service = service;
@@ -5,10 +7,7 @@ class PlaylistSongsHandler {
     this._playlistsService = playlistsService;
     this._validator = validator;
 
-    this.postSongToPlaylistHandler = this.postSongToPlaylistHandler.bind(this);
-    this.getSongsFromPlaylistHandler = this.getSongsFromPlaylistHandler.bind(this);
-    this.deleteSongFromPlaylistHandler = this.deleteSongFromPlaylistHandler.bind(this);
-    this.getPlaylistSongsActivitiesHandler = this.getPlaylistSongsActivitiesHandler.bind(this);
+    autoBind(this);
   }
 
   async postSongToPlaylistHandler(request, h) {
