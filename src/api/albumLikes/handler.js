@@ -11,6 +11,8 @@ class AlbumLikesHandler {
   }
 
   async postLikeAlbumHandler(request, h) {
+    console.log(request.auth.credentials);
+
     const { id: credentialId } = request.auth.credentials;
     const { albumId } = request.params;
 
