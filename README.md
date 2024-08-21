@@ -69,12 +69,15 @@ Seiring dengan pertumbuhan pengguna, **OpenMusic API versi 3** diperkenalkan den
 
 ### Rating & Certificate
 **Versi 1:**
+
 ![versi1](https://i.ibb.co.com/4wrL90H/v1.png)
 
 **Versi 2:**
+
 ![versi2](https://i.ibb.co.com/3d9fz0c/v2.png)
 
 **Versi 3:**
+
 ![versi3](https://i.ibb.co.com/1YVrtht/v3.png)
 
 [Sertifikat Kompetensi Kelas Belajar Membuat Aplikasi Back-End untuk Pemula](https://www.dicoding.com/certificates/QLZ97EQ89P5D)
